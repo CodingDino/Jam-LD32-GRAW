@@ -13,8 +13,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - Console
+  - Player
   - 
   - 
   - 
@@ -41,9 +41,21 @@ TagManager:
   - name: Background
     uniqueID: 3211842955
     locked: 0
+  - name: WhaleBack
+    uniqueID: 3330057179
+    locked: 0
+  - name: Console
+    uniqueID: 996246093
+    locked: 0
+  - name: Walls
+    uniqueID: 351640795
+    locked: 0
+  - name: Character
+    uniqueID: 965801265
+    locked: 0
+  - name: Prompts
+    uniqueID: 2996192495
+    locked: 0
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: Characters
-    uniqueID: 965801265
     locked: 0

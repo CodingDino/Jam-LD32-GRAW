@@ -30,6 +30,7 @@ public class ColliderList : MonoBehaviour {
 	// ********************************************************************
 	// Private Data Members 
 	// ********************************************************************
+	private List<Collider2D> m_collidersLastFrame = new List<Collider2D>();
 	private List<Collider2D> m_colliders = new List<Collider2D>();
 
 
@@ -37,10 +38,10 @@ public class ColliderList : MonoBehaviour {
 	// Properties
 	// ********************************************************************
 	public List<Collider2D> colliders {
-		get { return m_colliders; }
+		get { return m_collidersLastFrame; }
 	}
 	public bool isColliding {
-		get { if (m_colliders.Count > 0) return true; else return false; }
+		get { if (m_collidersLastFrame.Count > 0) return true; else return false; }
 	}
 
 	
@@ -49,6 +50,7 @@ public class ColliderList : MonoBehaviour {
 	// Purpose:		Called once per frame, when .
 	// ********************************************************************
 	void LateUpdate () {
+		m_collidersLastFrame = m_colliders;
 		m_colliders = new List<Collider2D>();
 	}
 

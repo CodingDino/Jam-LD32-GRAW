@@ -71,7 +71,6 @@ public class InputPlatformMovement2D : MonoBehaviour {
 		float right = Input.GetAxis(m_axisHorizontal);
 		bool jump = Input.GetButton (m_buttonJump);
 		if (!jump) m_bHasJumped = false;
-		Debug.Log("Jump button pressed");
 		
 		// Build direction vector based on input
 		Vector3 direction = new Vector3(right, 0.0f, 0.0f);
