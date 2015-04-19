@@ -12,6 +12,7 @@
 // ************************************************************************ 
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 
 // ********************************************************************
@@ -71,13 +72,22 @@ public class Console : MonoBehaviour
 	private Animator m_exitPrompt;
 	[SerializeField]
 	private Animator m_consolePrompt;
+	[SerializeField]
+	private List<Animator> m_specialPromptAnimators;
+	[SerializeField]
+	private List<Animation> m_specialPromptAnimations;
+	[SerializeField]
+	private TextMesh m_promptText;
 
 
 	// ********************************************************************
 	// Exposed Data Members 
 	// ********************************************************************
+	private bool m_acceptConsoleInput = false;
 	private bool m_playerInConsole = false;
 	private bool m_playerNearConsole = false;
+	private string m_currentButton = "A";
+	private int m_consoleStage = 0;
 
 
 	// ********************************************************************
@@ -88,6 +98,26 @@ public class Console : MonoBehaviour
 	
 	
 	// ********************************************************************
+	// Function:	OnEnable()
+	// Purpose:		Called when the script is enabled.
+	// ********************************************************************
+	void OnEnable() 
+	{ 
+		AnimationListener.OnAnimationEvent += OnAnimationEvent; 
+	}
+	
+	
+	// ********************************************************************
+	// Function:	OnDisable()
+	// Purpose:		Called when the script is disabled.
+	// ********************************************************************
+	void OnDisable() 
+	{ 
+		AnimationListener.OnAnimationEvent -= OnAnimationEvent; 
+	}
+
+
+	// ********************************************************************
 	// Function:	Start()
 	// Purpose:		Called on startup.
 	// ********************************************************************
@@ -95,6 +125,8 @@ public class Console : MonoBehaviour
 	{
 		m_movementPrompt.SetBool("Hidden", false);
 		m_jumpPrompt.SetBool("Hidden", false);
+		SetConsoleDefaults();
+
 	}
 
 	// ********************************************************************
@@ -140,6 +172,188 @@ public class Console : MonoBehaviour
 	{
 		// TODO: Check input based on console type
 		// TODO: Perform actions based on console input
+
+		bool consoleInput;
+
+		switch (m_consoleType)
+		{
+		case ConsoleType.POWER :
+			consoleInput = Input.GetButtonDown("Jump");
+			if (consoleInput)
+			{
+				// Show pulse
+				m_specialPromptAnimations[0].Play();
+				
+				// TODO: Play good sound
+
+				ExecuteConsoleCommand(m_consoleType);
+			}
+			break;
+		case ConsoleType.TAIL :
+			consoleInput = Input.GetButtonDown(m_currentButton);
+			if (consoleInput)
+			{
+				if (m_acceptConsoleInput)
+				{
+					// Show pulse
+					m_specialPromptAnimations[0].Play();
+
+					// TODO: Play good sound
+
+					if (m_currentButton == "A")
+					{
+						m_currentButton = "D";
+						m_specialPromptAnimators[0].SetBool("Disabled",true);
+						m_specialPromptAnimators[1].SetBool("Disabled",false);
+					}
+					else
+					{
+						m_currentButton = "A";
+						m_specialPromptAnimators[0].SetBool("Disabled",false);
+						m_specialPromptAnimators[1].SetBool("Disabled",true);
+					}
+					m_acceptConsoleInput = false;
+					ExecuteConsoleCommand(m_consoleType);
+				}
+				else
+				{
+					// TODO: Show red tint
+					// TODO: Play bad sound
+				}
+			}
+			break;
+		case ConsoleType.HORN :
+			consoleInput = Input.GetButtonDown("Jump");
+			if (consoleInput)
+			{
+				ExecuteConsoleCommand(m_consoleType);
+				if (m_consoleStage == 0)
+				{
+					// Show pulse
+					m_specialPromptAnimations[0].Play();
+					
+					// TODO: Play good sound
+					
+					m_promptText.text = "Fire";
+
+					m_consoleStage = 1;
+				}
+				else
+				{
+					// Show pulse
+					m_specialPromptAnimations[0].Play();
+					
+					// TODO: Play good sound
+
+
+					PlayerExitsConsole();
+					m_promptText.text = "Aim";
+				}
+			}
+			break;
+		case ConsoleType.MOUTH :
+			consoleInput = Input.GetButtonDown(m_currentButton);
+			if (consoleInput)
+			{
+				// Show pulse
+				m_specialPromptAnimations[m_consoleStage].Play();
+				
+				// TODO: Play good sound
+
+				if (m_currentButton == "A")
+				{
+					m_consoleStage = 1;
+					m_currentButton = "W";
+					m_specialPromptAnimators[0].SetBool("Disabled",true);
+					m_specialPromptAnimators[1].SetBool("Disabled",false);
+					m_specialPromptAnimators[2].SetBool("Disabled",true);
+				}
+				else if (m_currentButton == "W")
+				{
+					m_consoleStage = 2;
+					m_currentButton = "D";
+					m_specialPromptAnimators[0].SetBool("Disabled",true);
+					m_specialPromptAnimators[1].SetBool("Disabled",true);
+					m_specialPromptAnimators[2].SetBool("Disabled",false);
+				}
+				else
+				{
+					m_consoleStage = 0;
+					m_currentButton = "A";
+					m_specialPromptAnimators[0].SetBool("Disabled",false);
+					m_specialPromptAnimators[1].SetBool("Disabled",true);
+					m_specialPromptAnimators[2].SetBool("Disabled",true);
+				}
+				ExecuteConsoleCommand(m_consoleType);
+			}
+			break;
+		case ConsoleType.SPOUT :
+			if (m_acceptConsoleInput)
+			{
+				consoleInput = Input.GetButtonDown("Jump");
+				if (consoleInput)
+				{
+					ExecuteConsoleCommand(m_consoleType);
+
+					// TODO: Play good sound
+
+					// Show pulse
+					m_specialPromptAnimations[m_consoleStage].Play();
+
+					SetConsoleDefaults();
+				}
+			}
+			else
+			{
+				consoleInput = Input.GetButtonDown(m_currentButton);
+				if (consoleInput)
+				{
+					ExecuteConsoleCommand(m_consoleType);
+
+					// Show pulse
+					m_specialPromptAnimations[m_consoleStage].Play();
+					
+					// TODO: Play good sound
+					
+					if (m_currentButton == "A")
+					{
+						m_consoleStage = 1;
+						m_currentButton = "D";
+						m_specialPromptAnimators[0].SetBool("Disabled",true);
+						m_specialPromptAnimators[1].SetBool("Disabled",false);
+					}
+					else
+					{
+						m_consoleStage = 0;
+						m_currentButton = "A";
+						m_specialPromptAnimators[0].SetBool("Disabled",false);
+						m_specialPromptAnimators[1].SetBool("Disabled",true);
+					}
+				}
+
+				// TODO: If they press other button, play bad sound and red tint
+			}
+			break;
+		case ConsoleType.EYE :
+			consoleInput = Input.GetButtonDown("Jump");
+			m_consoleStage = consoleInput ? 1 : 0;
+			ExecuteConsoleCommand(m_consoleType);
+			break;
+		default :
+			m_acceptConsoleInput = true;
+			break;
+		}
+
+	}
+
+
+	// ********************************************************************
+	// Function:	ExecuteConsoleCommand()
+	// Purpose:		Execute command for console type
+	// ********************************************************************
+	private void ExecuteConsoleCommand (ConsoleType _type) 
+	{
+		Debug.Log("Executing console command: "+_type.ToString());
 	}
 
 
@@ -167,6 +381,51 @@ public class Console : MonoBehaviour
 		m_enterPrompt.SetBool("Hidden", true);
 		m_movementPrompt.SetBool("Hidden", true);
 		m_jumpPrompt.SetBool("Hidden", true);
+
+		// Console defaults
+		SetConsoleDefaults();
+	}
+
+
+	// ********************************************************************
+	// Function:	SetConsoleDefaults()
+	// Purpose:		Sets up the defaults for each console
+	// ********************************************************************
+	private void SetConsoleDefaults () 
+	{
+		switch (m_consoleType)
+		{
+		case ConsoleType.TAIL :
+			m_acceptConsoleInput = false;
+			m_specialPromptAnimators[0].SetBool("Disabled",false);
+			m_specialPromptAnimators[1].SetBool("Disabled",true);
+			m_currentButton = "A";
+			break;
+		case ConsoleType.HORN :
+			m_consoleStage = 0;
+			m_promptText.text = "Aim";
+			break;
+		case ConsoleType.MOUTH :
+			m_consoleStage = 0;
+			m_currentButton = "A";
+			m_specialPromptAnimators[0].SetBool("Disabled",false);
+			m_specialPromptAnimators[1].SetBool("Disabled",true);
+			m_specialPromptAnimators[2].SetBool("Disabled",true);
+			break;
+		case ConsoleType.SPOUT :
+			m_specialPromptAnimators[0].SetBool("Disabled",false);
+			m_specialPromptAnimators[1].SetBool("Disabled",true);
+			m_specialPromptAnimators[0].gameObject.SetActive(true);
+			m_specialPromptAnimators[1].gameObject.SetActive(true);
+			m_specialPromptAnimators[2].gameObject.SetActive(false);
+			m_promptText.text = "Loosen Valve";
+			m_consoleStage = 0;
+			m_currentButton = "A";
+			break;
+		default :
+			m_acceptConsoleInput = true;
+			break;
+		}
 	}
 
 
@@ -231,6 +490,36 @@ public class Console : MonoBehaviour
 		m_activeTint.color = tintColor;
 		
 		m_enterPrompt.SetBool("Hidden", true);
+	}
+	
+	
+	// ********************************************************************
+	// Function:	OnAnimationEvent()
+	// Purpose:		Called when an animation event is triggered.
+	// ********************************************************************
+	void OnAnimationEvent(GameObject animationObject, string eventID) 
+	{
+		if (m_consoleType == ConsoleType.TAIL)
+		{
+			if (eventID == "metronome-enter")
+			{
+				m_acceptConsoleInput = true;
+
+				if (m_currentButton == "A")
+					m_specialPromptAnimators[0].SetBool("Highlighted",true);
+				else
+					m_specialPromptAnimators[1].SetBool("Highlighted",true);
+			}
+			else if (eventID == "metronome-exit")
+			{
+				m_acceptConsoleInput = false;
+
+				if (m_currentButton == "A")
+					m_specialPromptAnimators[0].SetBool("Highlighted",false);
+				else
+					m_specialPromptAnimators[1].SetBool("Highlighted",false);
+			}
+		}
 	}
 
 
